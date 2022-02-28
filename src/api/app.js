@@ -1,6 +1,18 @@
 const express = require('express');
+const logger = require('morgan');
+const cors = require('cors');
+
+const userRouter = require('../services/users');
+const loginRouter = require('../services/login');
 
 const app = express();
+
+app.use(express.json());
+app.use(cors());
+app.use(logger('dev'));
+
+app.use('/users', userRouter);
+app.use('/login', loginRouter);
 
 // Não remover esse end-point, ele é necessário para o avaliador
 app.get('/', (request, response) => {
