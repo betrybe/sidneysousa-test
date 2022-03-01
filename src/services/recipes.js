@@ -2,14 +2,15 @@ const {
   Router,
 } = require('express');
 const {
-  verify,
-} = require('jsonwebtoken');
-const {
   ObjectId,
 } = require('mongodb').ObjectId;
 const multer = require('multer');
 
 const recipeCtrl = require('../controllers/recipe_controller');
+const {
+  getToken,
+  validateToken,
+} = require('../utils/token_utils');
 
 const imagesPath = 'src/uploads/';
 
@@ -45,30 +46,7 @@ const upload = multer({
   },
 });
 
-const {
-  SECRET,
-} = require('../config/secret');
-
 const validateRecipeInputs = (name, ingredients, preparation) => name && ingredients && preparation;
-
-const getToken = (req) => {
-  const token = req.headers.authorization;
-  return token;
-};
-
-const validateToken = (token) => {
-  const invalidId = '';
-  if (token) {
-    try {
-      const decodedToken = verify(token, SECRET);
-      return decodedToken.userId;
-    } catch (_) {
-      return invalidId;
-    }
-  }
-
-  return invalidId;
-};
 
 const userCanUpdateOrDelete = async (id, token) => {
   const userId = validateToken(token);

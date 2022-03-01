@@ -6,6 +6,15 @@ const path = require('path');
 const userRouter = require('../services/users');
 const loginRouter = require('../services/login');
 const recipeRouter = require('../services/recipes');
+const {
+  connectToDB,
+} = require('../config/db');
+
+const doDbConnection = async () => {
+  await connectToDB();
+};
+
+doDbConnection();
 
 const app = express();
 
