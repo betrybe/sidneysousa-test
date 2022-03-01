@@ -17,7 +17,7 @@ const getToken = async (email) => {
     _id,
   } = user;
   const token = sign({
-      user: _id,
+      userId: _id,
       timestamp: new Date(),
     },
     SECRET, {
