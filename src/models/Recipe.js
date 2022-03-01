@@ -20,6 +20,10 @@ const schema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'User',
   },
+  image: {
+    type: String,
+    required: false,
+  },
 }, {
   versionKey: false,
 });

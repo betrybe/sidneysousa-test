@@ -37,6 +37,11 @@ const controller = {
 
     return isUserValid;
   },
+  delete: async (id) => {
+    await Recipe.deleteOne({
+      _id: id,
+    });
+  },
 };
 
 module.exports = controller;

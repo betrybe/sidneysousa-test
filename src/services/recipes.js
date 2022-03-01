@@ -7,8 +7,43 @@ const {
 const {
   ObjectId,
 } = require('mongodb').ObjectId;
+const multer = require('multer');
 
 const recipeCtrl = require('../controllers/recipe_controller');
+
+const imagesPath = 'src/uploads/';
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, imagesPath);
+  },
+  filename: async (req, file, cb) => {
+    const {
+      id,
+    } = req.params;
+
+    const extArray = file.mimetype.split('/');
+    const extension = extArray[extArray.length - 1];
+    const imageFileName = `${id}.${extension}`;
+    cb(null, imageFileName);
+
+    const image = `${req.get('host')}/${imagesPath}${imageFileName}`;
+    const recipe = await recipeCtrl.findById(id);
+    recipe.image = image;
+    await recipe.save();
+  },
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'image/jpeg') {
+      cb(null, true);
+    }
+
+    cb(null, false);
+  },
+});
 
 const {
   SECRET,
@@ -86,6 +121,22 @@ const validateRecipeUpdate = async (id, token) => {
   };
 };
 
+const verifyUserCanUpload = async (req, res, next) => {
+  const {
+    id,
+    token,
+  } = getUpdateInputs(req);
+
+  const response = await validateRecipeUpdate(id, token);
+  if (response.statusCode === 200) {
+    return next();
+  }
+
+  return res.status(response.statusCode).json({
+    message: response.message,
+  });
+};
+
 const recipesRouter = Router();
 
 recipesRouter.post('/', async (req, res) => {
@@ -153,6 +204,32 @@ recipesRouter.put('/:id', async (req, res) => {
   return res.status(response.statusCode).json({
     message: response.message,
   });
+});
+
+recipesRouter.delete('/:id', async (req, res) => {
+  const {
+    id,
+    token,
+  } = getUpdateInputs(req);
+
+  const response = await validateRecipeUpdate(id, token);
+  if (response.statusCode === 200) {
+    await recipeCtrl.delete(id);
+    return res.status(204).send();
+  }
+
+  return res.status(response.statusCode).json({
+    message: response.message,
+  });
+});
+
+recipesRouter.put('/:id/image', verifyUserCanUpload, upload.single('image'), async (req, res) => {
+  const {
+    id,
+  } = req.params;
+
+  const recipe = await recipeCtrl.findById(id);
+  res.status(200).json(recipe);
 });
 
 module.exports = recipesRouter;
